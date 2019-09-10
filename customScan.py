@@ -4,28 +4,39 @@
 import nmap
 
 host = '172.18.97.225'
-port = ''
+# port = ''
+
+whatHost = input('Enter the IP you want to scan: ')
 
 scanner = nmap.PortScanner()
-scanner.scan(hosts=host, arguments='-v -sS -sV -sC -A -O')
-
-
+scanner.scan(hosts=whatHost, arguments='-v -sS -sV -sC -A -O')
 
 for allHosts in scanner.all_hosts():
     print('---------------------')
-    # print('Host: %s (%s)' % (host, scanner[host].hostname))
-    print('Host: %s' % (host))
-    print('State %s' % scanner[host].state())
+    # print('Host: %s (%s)' % (whatHost, scanner[whatHost].hostname))
+    print('Host: %s' % (whatHost))
+    print('State %s' % scanner[whatHost].state())
 
-for proto in scanner[host].all_protocols():
+for proto in scanner[whatHost].all_protocols():
     print('\nProtocol: %s' % proto)
 
+print(scanner[whatHost].all_protocols())
 
-eachPort = scanner[host][proto].keys()
+foundPorts = scanner[whatHost]['tcp'].keys()
 
-for port in eachPort:
-    print('Port: %s\tState: %s\tReason: %s\tName:  %s\tProduct: %s\t\tVersion: %s' 
-    % (port, scanner[host][proto][port]['state'], scanner[host][proto][port]['reason'], scanner[host][proto][port]['name'], 
-    scanner[host][proto][port]['product'], scanner[host][proto][port]['version']))
+# for port in foundPorts:
+#     print('Port: %s\tState: %s\tReason: %s\tName:  %s\tProduct: %s\t\tVersion: %s' 
+#     % (port, scanner[whatHost][proto][port]['state'], scanner[whatHost][proto][port]['reason'], scanner[whatHost][proto][port]['name'], 
+#     scanner[whatHost][proto][port]['product'], scanner[whatHost][proto][port]['version']))
 
-scanner.csv
+
+# for port in foundPorts:
+#     print('{:<20s} {:<25s} {:<25s} {:<25s} {:<35s} {:<35}'.format('Port: %s', 'State: %s', 'Reason: %s', 'Name: %s', 'Product: %s', 'Version: %s') 
+#         % (port, scanner[whatHost][proto][port]['state'], scanner[whatHost][proto][port]['reason'], scanner[whatHost][proto][port]['name'], 
+#             scanner[whatHost][proto][port]['product'], scanner[whatHost][proto][port]['version']))
+
+
+for eachPort in foundPorts:
+    print('{:<20s} {:<25s} {:<25s} {:<25s} {:<35s} {:<35}'.format('Port: %s', 'State: %s', 'Reason: %s', 'Name: %s', 'Product: %s', 'Version: %s') 
+    % (str(eachPort), scanner[whatHost][proto][str(eachPort)]['state'], scanner[whatHost][proto][str(eachPort)]['reason'], scanner[whatHost][proto][str(eachPort)]['name'], 
+        scanner[whatHost][proto][str(eachPort)]['product'], scanner[whatHost][proto][str(eachPort)]['version']))
