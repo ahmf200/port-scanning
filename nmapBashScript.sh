@@ -2,7 +2,13 @@
 
 read -p "Enter the IP you want to scan: " ipAddress
 
-read -p "Which scan type would you like to use? " scanType
+
+printf "Scan types:\n
+        1. SYNC ACK (-sS)
+        2. UDP (-sU)
+        3. Comprehensive (-v -sS -sV -sC -A -O)\n\n"
+
+read -p "Which scan type would you like to use? (Type the number) " scanType
 
 if [ $scanType == 1 ]
 then
