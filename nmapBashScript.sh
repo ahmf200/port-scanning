@@ -2,26 +2,79 @@
 
 read -p "Enter the IP you want to scan: " ipAddress
 
-
 printf "Scan types:\n
-        1. SYNC ACK (-sS)
+        1. TCP SYN (-sS)
         2. UDP (-sU)
-        3. Comprehensive (-v -sS -sV -sC -A -O)\n\n"
+        3. Comprehensive (-v -sS -sV -sC -A -O)
+        9. More information on each scan type\n\n"
 
 read -p "Which scan type would you like to use? (Type the number) " scanType
 
+saveToOutputQuestion() {
+    read -p "\nDo you want the output to be saved to a file? (yes/no or y/n)\n" outputDecision
+}
+
 if [ $scanType == 1 ]
 then
-    printf "\n --- SYNC ACK scan selected --- \n"
-    sudo nmap -sS $ipAddress > scanResult.txt
+    printf "\n --- TCP SYN scan selected --- \n"
+    # sudo nmap -sS $ipAddress > scanResult.txt
+    # nmap -sS $ipAddress > scanResult.txt
+    saveToOutputQuestion
+    if [ $outputDecision == 'yes' ] || [ $outputDecision == 'y' ]
+    then
+        nmap -sS $ipAddress > scanResult.txt
+    elif [ $outputDecision == 'no' ] || [ $outputDecision == 'n' ]
+    then
+        nmap -sS $ipAddress
+    fi
 elif [ $scanType == 2 ]
 then
     printf "\n --- UDP scan selected --- \n"
-    sudo nmap -sU $ipAddress > scanResult.txt
+    saveToOutputQuestion
+    if [ $outputDecision == 'yes' ] || [ $outputDecision == 'y' ]
+    then
+        nmap -sU $ipAddress > scanResult.txt
+    elif [ $outputDecision == 'no' ] || [ $outputDecision == 'n' ]
+    then
+        nmap -sU $ipAddress
+    fi
 elif [ $scanType == 3 ]
 then
     printf "\n --- Comprehensive scan selected --- \n"
-    sudo nmap -v -sS -sV -sC -A -O $ipAddress > scanResult.txt
+    nmap -v -sS -sV -sC -A -O
+    if [ $outputDecision == 'yes' ] || [ $outputDecision == 'y' ]
+    then
+        nmap -v -sS -sV -sC -A -O $ipAddress > scanResult.txt
+    elif [ $outputDecision == 'no' ] || [ $outputDecision == 'n' ]
+    then
+        nmap -v -sS -sV -sC -A -O $ipAddress
+    fi
+elif [ $scanType == 9 ]
+then
+    printf "\n --- Scan type information --- \n"
+    printf "\n\n -sS"
+    printf "\t    SYN scan is the default and most popular scan option for good reasons. 
+            It can be performed quickly, scanning thousands of ports per second on a fast network not hampered by restrictive firewalls. 
+            It is also relatively unobtrusive and stealthy since it never completes TCP connections."
+    printf "\n\n -sT"
+    printf "\t    TCP connect scan is the default TCP scan type when SYN scan is not an option. This is the case when a user does not have raw packet privileges. 
+            Instead of writing raw packets as most other scan types do, Nmap asks the underlying operating system to establish a connection with the target machine and port by issuing the connect system call. 
+            This is the same high-level system call that web browsers, P2P clients, and most other network-enabled applications use to establish a connection. 
+            It is part of a programming interface known as the Berkeley Sockets API. 
+            Rather than read raw packet responses off the wire, Nmap uses this API to obtain status information on each connection attempt.
+            When SYN scan is available, it is usually a better choice. Nmap has less control over the high level connect call than with raw packets, making it less efficient"
+    printf "\n\n -sU"
+    printf "\t    While most popular services on the Internet run over the TCP protocol, UDP services are widely deployed. DNS, SNMP, and DHCP (registered ports 53, 161/162, and 67/68) are three of the most common. 
+            Because UDP scanning is generally slower and more difficult than TCP, some security auditors ignore these ports. 
+            This is a mistake, as exploitable UDP services are quite common and attackers certainly don't ignore the whole protocol. 
+            Fortunately, Nmap can help inventory UDP ports.
+            UDP scan is activated with the -sU option. It can be combined with a TCP scan type such as SYN scan (-sS) to check both protocols during the same run.
+            UDP scan works by sending a UDP packet to every targeted port"
+elif [ -z $scanType ]
+then
+    printf "Nothing entered."
+    exit 1
 else
     printf "\nYou need to select a scan type."
+    exit 1
 fi
