@@ -4,50 +4,99 @@ read -p "Enter the IP you want to scan: " ipAddress
 
 printf "Scan types:\n
         1. TCP SYN (-sS)
-        2. UDP (-sU)
-        3. Comprehensive (-v -sS -sV -sC -A -O)
+        2. TCP connect (-sT)
+        3. UDP (-sU)
+        4. Comprehensive (-v[verbose] -sS[TCP SYN] -sV[Service version detection] -sC -O[Operating system detection])
+        5. Aggressive (-A) - INTRUSIVE, BE WARNED 
         9. More information on each scan type\n\n"
 
 read -p "Which scan type would you like to use? (Type the number) " scanType
 
 saveToOutputQuestion() {
-    read -p "\nDo you want the output to be saved to a file? (yes/no or y/n)\n" outputDecision
+    read -p "\nDo you want the output to be saved to a file? (yes/no or y/n)\n
+    Your file name will be in the following format -> scanResult-<scanType>-$ipAddress\n" outputDecision
+}
+
+pingQuestion() {
+    read -p "\nDo you wish to not ping the target?\n" pingDecision
 }
 
 if [ $scanType == 1 ]
 then
     printf "\n --- TCP SYN scan selected --- \n"
-    # sudo nmap -sS $ipAddress > scanResult.txt
-    # nmap -sS $ipAddress > scanResult.txt
+    pingQuestion
+    if [ $pingDecision == 'yes' ] || [ $pingDecision == 'y']
+    then
+        saveToOutputQuestion
+        if [ $outputDecision == 'yes' ] || [ $outputDecision == 'y' ]
+        then
+            nmap -sS -Pn $ipAddress > scanResult-tcpSyn-$ipAddress.txt
+        elif [ $outputDecision == 'no' ] || [ $outputDecision == 'n' ]
+        then
+            nmap -sS -Pn $ipAddress
+        fi
+    elif [ $pingDecision == 'no' ] || [ $pingDecision == 'n' ]
+    then
+        saveToOutputQuestion
+        if [ $outputDecision == 'yes' ] || [ $outputDecision == 'y' ]
+        then
+            nmap -sS $ipAddress > scanResult-tcpSyn-$ipAddress.txt
+        elif [ $outputDecision == 'no' ] || [ $outputDecision == 'n' ]
+        then
+            nmap -sS $ipAddress
+        fi
+    fi
+    # saveToOutputQuestion
+    # if [ $outputDecision == 'yes' ] || [ $outputDecision == 'y' ]
+    # then
+    #     nmap -sS $ipAddress > scanResult-tcpSyn-$ipAddress.txt
+    # elif [ $outputDecision == 'no' ] || [ $outputDecision == 'n' ]
+    # then
+    #     nmap -sS $ipAddress
+    # fi
+elif [ $scanType == 2 ]
+then
+    printf "\n --- TCP connect scan selected --- \n"
     saveToOutputQuestion
     if [ $outputDecision == 'yes' ] || [ $outputDecision == 'y' ]
     then
-        nmap -sS $ipAddress > scanResult.txt
+        nmap -sT $ipAddress > scanResult-tcpCon-$ipAddress.txt
     elif [ $outputDecision == 'no' ] || [ $outputDecision == 'n' ]
     then
-        nmap -sS $ipAddress
+        nmap -sT $ipAddress
     fi
-elif [ $scanType == 2 ]
+elif [ $scanType == 3 ]
 then
     printf "\n --- UDP scan selected --- \n"
     saveToOutputQuestion
     if [ $outputDecision == 'yes' ] || [ $outputDecision == 'y' ]
     then
-        nmap -sU $ipAddress > scanResult.txt
+        nmap -sU $ipAddress > scanResult-udp-$ipAddress.txt
     elif [ $outputDecision == 'no' ] || [ $outputDecision == 'n' ]
     then
         nmap -sU $ipAddress
     fi
-elif [ $scanType == 3 ]
+elif [ $scanType == 4 ]
 then
     printf "\n --- Comprehensive scan selected --- \n"
-    nmap -v -sS -sV -sC -A -O
+    saveToOutputQuestion
     if [ $outputDecision == 'yes' ] || [ $outputDecision == 'y' ]
     then
-        nmap -v -sS -sV -sC -A -O $ipAddress > scanResult.txt
+        nmap -v -sS -sV -sC -O $ipAddress > scanResult-comp-$ipAddress.txt
     elif [ $outputDecision == 'no' ] || [ $outputDecision == 'n' ]
     then
-        nmap -v -sS -sV -sC -A -O $ipAddress
+        nmap -v -sS -sV -sC -O $ipAddress
+    fi
+elif [ $scanType == 5 ]
+then
+    printf "\n --- Aggressive scan selected --- \n"
+    saveToOutputQuestion
+    if [ $outputDecision == 'yes' ] || [ $outputDecision == 'y' ]
+    then
+        nmap -v -A $ipAddress > scanResult-comp-$ipAddress.txt
+    elif [ $outputDecision == 'no' ] || [ $outputDecision == 'n' ]
+    then
+        nmap -v -A $ipAddress
     fi
 elif [ $scanType == 9 ]
 then
@@ -73,6 +122,10 @@ then
 elif [ -z $scanType ]
 then
     printf "Nothing entered."
+    exit 1
+elif ! [[ $scanType =~ ^[0-9]+$ ]]
+then
+    printf "Numbers only."
     exit 1
 else
     printf "\nYou need to select a scan type."
